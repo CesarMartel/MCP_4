@@ -42,6 +42,7 @@ langchain-google-vertexai
 Estructura de Archivos Sugerida
 Para mantener el orden, te recomendamos seguir la estructura estándar de un proyecto Django:
 
+```
 mongochat/
 ├── manage.py
 ├── mongochat/
@@ -55,7 +56,7 @@ mongochat/
     ├── views.py
     ├── urls.py
     └── graph.py  <-- Aquí puedes construir tu lógica de LangGraph
-
+```
 <img width="1349" height="421" alt="image" src="https://github.com/user-attachments/assets/fd32f5e5-c043-417b-bdb5-28c92233ead8" />
 <img width="1120" height="309" alt="image" src="https://github.com/user-attachments/assets/b01100c1-3978-4b30-b99e-c2820f9751e4" />
 
