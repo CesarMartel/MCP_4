@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot con Memoria Persistente</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .chat-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 18px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .message-label {
+            font-size: 11px;
+            margin-bottom: 5px;
+            font-weight: 600;
+            opacity: 0.7;
+        }
+
+        .input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        #messageInput:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .btn-send {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-send:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-send:active {
+            transform: translateY(0);
+        }
+
+        .btn-send:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-clear {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background: #d32f2f;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 10px;
+            color: #667eea;
+            font-style: italic;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 10px 20px;
+            border-left: 4px solid #c62828;
+            display: none;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* Scrollbar personalizada */
+        .messages-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .messages-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>🤖 Chatbot con Memoria Persistente</h1>
+            <p>Powered by Google Vertex AI & LangGraph</p>
+        </div>
+
+        <div class="messages-container" id="messagesContainer">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="message {{ message.role }}">
+                    <div>
+                        <div class="message-label">
+                            {% if message.role == 'user' %}
+                                Tú
+                            {% else %}
+                                Asistente
+                            {% endif %}
+                        </div>
+                        <div class="message-content">{{ message.content }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <svg fill="#000000" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+                    </svg>
+                    <h3>¡Comienza una conversación!</h3>
+                    <p>Escribe un mensaje para empezar a chatear con la IA</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="loading" id="loadingIndicator">
+            ⏳ Generando respuesta...
+        </div>
+
+        <div class="error" id="errorContainer"></div>
+
+        <div class="input-container">
+            <input 
+                type="text" 
+                id="messageInput" 
+                placeholder="Escribe tu mensaje aquí..." 
+                autocomplete="off"
+            >
+            <button class="btn btn-send" id="sendBtn">Enviar</button>
+            <button class="btn btn-clear" id="clearBtn">Limpiar</button>
+        </div>
+    </div>
+
+    <script>
+        const messagesContainer = document.getElementById('messagesContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const errorContainer = document.getElementById('errorContainer');
+        
+        let sessionId = '{{ session_id }}';
+
+        // Función para hacer scroll al final
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Función para añadir un mensaje al chat
+        function addMessage(role, content) {
+            // Eliminar el estado vacío si existe
+            const emptyState = messagesContainer.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const label = role === 'user' ? 'Tú' : 'Asistente';
+            
+            messageDiv.innerHTML = `
+                <div>
+                    <div class="message-label">${label}</div>
+                    <div class="message-content">${content}</div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Función para mostrar error
+        function showError(message) {
+            errorContainer.textContent = message;
+            errorContainer.classList.add('active');
+            setTimeout(() => {
+                errorContainer.classList.remove('active');
+            }, 5000);
+        }
+
+        // Función para enviar mensaje
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            
+            if (!message) {
+                showError('Por favor, escribe un mensaje');
+                return;
+            }
+
+            // Deshabilitar input y botón
+            messageInput.disabled = true;
+            sendBtn.disabled = true;
+            loadingIndicator.classList.add('active');
+
+            // Añadir mensaje del usuario
+            addMessage('user', message);
+            messageInput.value = '';
+
+            try {
+                const response = await fetch('/chat/send/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        session_id: sessionId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    addMessage('assistant', data.message);
+                    sessionId = data.session_id;
+                } else {
+                    showError(data.error || 'Error al enviar el mensaje');
+                }
+            } catch (error) {
+                showError('Error de conexión: ' + error.message);
+            } finally {
+                // Rehabilitar input y botón
+                messageInput.disabled = false;
+                sendBtn.disabled = false;
+                loadingIndicator.classList.remove('active');
+                messageInput.focus();
+            }
+        }
+
+        // Función para limpiar la conversación
+        async function clearConversation() {
+            if (!confirm('¿Estás seguro de que quieres limpiar la conversación?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/chat/clear/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    messagesContainer.innerHTML = `
+                        <div class="empty-state">
+                            <svg fill="#000000" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+                            </svg>
+                            <h3>¡Comienza una conversación!</h3>
+                            <p>Escribe un mensaje para empezar a chatear con la IA</p>
+                        </div>
+                    `;
+                    sessionId = data.session_id;
+                }
+            } catch (error) {
+                showError('Error al limpiar la conversación: ' + error.message);
+            }
+        }
+
+        // Event listeners
+        sendBtn.addEventListener('click', sendMessage);
+        clearBtn.addEventListener('click', clearConversation);
+
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Scroll inicial al final si hay mensajes
+        scrollToBottom();
+
+        // Enfocar el input al cargar
+        messageInput.focus();
+    </script>
+</body>
+</html>
+

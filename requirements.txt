@@ -1,0 +1,7 @@
+django==5.2.7
+pymongo==4.15.2
+langchain==0.3.20
+langchain-google-vertexai==2.1.0
+langgraph==0.2.76
+google-cloud-aiplatform==1.118.0
+
