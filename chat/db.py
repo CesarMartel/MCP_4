@@ -1,6 +1,3 @@
-"""
-Configuración y conexión a MongoDB
-"""
 from pymongo import MongoClient
 from django.conf import settings
 

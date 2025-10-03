@@ -6,7 +6,6 @@ import uuid
 from .graph import conversation_graph
 from .db import save_conversation, get_conversation
 
-
 def chat_view(request):
     """
     Vista principal del chat - Renderiza la interfaz web
@@ -27,7 +26,6 @@ def chat_view(request):
     }
     
     return render(request, 'chat.html', context)
-
 
 @csrf_exempt
 def send_message(request):
@@ -82,7 +80,6 @@ def send_message(request):
     return JsonResponse({
         'error': 'Método no permitido'
     }, status=405)
-
 
 def clear_conversation(request):
     """

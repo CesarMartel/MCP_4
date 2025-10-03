@@ -1,13 +1,9 @@
-"""
-Configuración de LangGraph para el chatbot con Vertex AI
-"""
 import vertexai
 from vertexai.generative_models import GenerativeModel
 from typing import TypedDict, Annotated
 from langgraph.graph import StateGraph, END
 from langchain_google_vertexai import ChatVertexAI
 
-# Configuración de Vertex AI
 PROJECT_ID = "stone-poetry-473315-a9"
 LOCATION = "us-central1"
 
@@ -22,7 +18,6 @@ class ConversationState(TypedDict):
     user_input: str  # Último mensaje del usuario
     ai_response: str  # Respuesta generada por la IA
 
-
 def process_user_input(state: ConversationState) -> ConversationState:
     """
     Nodo que procesa la entrada del usuario
@@ -36,7 +31,6 @@ def process_user_input(state: ConversationState) -> ConversationState:
     state["messages"].append(user_message)
     
     return state
-
 
 def generate_ai_response(state: ConversationState) -> ConversationState:
     """
@@ -85,7 +79,6 @@ Por favor, responde al último mensaje del usuario de manera natural y útil."""
     
     return state
 
-
 def create_conversation_graph():
     """
     Crea y compila el grafo de conversación
@@ -106,7 +99,6 @@ def create_conversation_graph():
     app = workflow.compile()
     
     return app
-
 
 # Crear la instancia del grafo
 conversation_graph = create_conversation_graph()
