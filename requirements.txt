@@ -1,0 +1,6 @@
+Django==4.2.7
+pymongo==4.6.0
+langgraph==0.0.20
+google-cloud-aiplatform>=1.39.0
+python-dotenv==1.0.0
+django-cors-headers==4.3.1

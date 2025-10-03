@@ -1,0 +1,2844 @@
+{% extends 'base.html' %}
+
+{% block title %}Chatbot con LangGraph y Google Vertex AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="header-background-effects">
+                <div class="floating-shapes">
+                    <div class="shape shape-1"></div>
+                    <div class="shape shape-2"></div>
+                    <div class="shape shape-3"></div>
+                    <div class="shape shape-4"></div>
+                </div>
+            </div>
+            
+            <div class="header-content">
+                <div class="header-main">
+                    <div class="robot-container">
+                        <div class="robot-avatar">
+                            <i class="fas fa-robot"></i>
+                            <div class="robot-glow"></div>
+                            <div class="robot-particles">
+                                <span class="particle"></span>
+                                <span class="particle"></span>
+                                <span class="particle"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="header-text">
+                        <h2 class="animated-title">
+                            <span class="title-word">Chat</span>
+                            <span class="title-word">Inteligente</span>
+                        </h2>
+                        <p class="subtitle">Asistente Virtual con IA Avanzada</p>
+                    </div>
+                    
+                    <div class="header-controls">
+                        <button class="history-toggle-btn" id="historyToggle" title="Ver historial">
+                            <i class="fas fa-history"></i>
+                            <span class="btn-text">Historial</span>
+                            <div class="btn-glow"></div>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="tech-showcase">
+                    <div class="tech-item" data-tech="langgraph">
+                        <div class="tech-icon">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+                        <span class="tech-name">LangGraph</span>
+                    </div>
+                    <div class="tech-item" data-tech="vertex">
+                        <div class="tech-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <span class="tech-name">Vertex AI</span>
+                    </div>
+                    <div class="tech-item" data-tech="mongodb">
+                        <div class="tech-icon">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <span class="tech-name">MongoDB</span>
+                    </div>
+                </div>
+                
+                <div class="connection-status">
+                    <div class="status-container">
+                        <div class="status-dot online">
+                            <div class="pulse-ring"></div>
+                            <div class="pulse-ring-2"></div>
+                        </div>
+                        <div class="status-text">
+                            <span class="status-label">Estado:</span>
+                            <span class="status-value">Conectado</span>
+                        </div>
+                    </div>
+                    <div class="connection-stats">
+                        <div class="stat">
+                            <i class="fas fa-bolt"></i>
+                            <span>Ultra Rápido</span>
+                        </div>
+                        <div class="stat">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>100% Seguro</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Panel de Historial -->
+        <div class="history-panel" id="historyPanel">
+            <div class="history-header">
+                <div class="history-title">
+                    <i class="fas fa-history"></i>
+                    <span>Historial de Conversaciones</span>
+                    <div class="history-decoration">
+                        <div class="decoration-line"></div>
+                        <div class="decoration-dot"></div>
+                        <div class="decoration-line"></div>
+                    </div>
+                </div>
+                <button class="history-close-btn" id="historyClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="history-content">
+                <div class="history-search">
+                    <div class="search-input-wrapper">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="historySearch" placeholder="Buscar en el historial...">
+                        <div class="search-effects"></div>
+                    </div>
+                </div>
+                
+                <div class="history-filters">
+                    <button class="filter-btn active" data-filter="all">
+                        <i class="fas fa-list"></i>
+                        <span>Todos</span>
+                    </button>
+                    <button class="filter-btn" data-filter="today">
+                        <i class="fas fa-calendar-day"></i>
+                        <span>Hoy</span>
+                    </button>
+                    <button class="filter-btn" data-filter="week">
+                        <i class="fas fa-calendar-week"></i>
+                        <span>Esta semana</span>
+                    </button>
+                </div>
+                
+                <div class="new-chat-section">
+                    <button class="new-chat-btn" id="newChatBtn">
+                        <div class="new-chat-icon">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <span>Nueva Conversación</span>
+                        <div class="new-chat-glow"></div>
+                    </button>
+                </div>
+                
+                <div class="history-list" id="historyList">
+                    <div class="history-empty">
+                        <div class="empty-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <h3>No hay conversaciones</h3>
+                        <p>Tu historial de conversaciones aparecerá aquí</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="history-footer">
+                <button class="clear-history-btn" id="clearHistory">
+                    <i class="fas fa-trash-alt"></i>
+                    <span>Limpiar historial</span>
+                </button>
+                <div class="history-stats">
+                    <span class="stat-item">
+                        <i class="fas fa-message"></i>
+                        <span id="totalMessages">0 mensajes</span>
+                    </span>
+                    <span class="stat-item">
+                        <i class="fas fa-clock"></i>
+                        <span id="totalTime">0 min</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot message-enter">
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    <div class="message-text">
+                        ¡Hola! 👋 Soy tu asistente virtual inteligente. 
+                        <br>Estoy aquí para ayudarte con cualquier pregunta que tengas.
+                        <br><br>
+                        <span class="emoji-sparkle">✨</span> Puedo:
+                        <br>• Responder preguntas generales
+                        <br>• Ayudarte con tareas específicas
+                        <br>• Mantener conversaciones naturales
+                        <br><br>
+                        ¿En qué puedo ayudarte hoy?
+                    </div>
+                    <div class="timestamp" id="welcomeTime"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="typing-dots">
+            <i class="fas fa-circle"></i>
+            <i class="fas fa-circle"></i>
+            <i class="fas fa-circle"></i>
+            </div>
+            <span class="typing-text">El bot está escribiendo...</span>
+        </div>
+        
+        <div class="chat-input">
+            <div class="input-group">
+                <div class="input-wrapper">
+                <input type="text" class="form-control" id="messageInput" 
+                       placeholder="Escribe tu mensaje aquí..." 
+                       maxlength="1000">
+                    <div class="input-effects"></div>
+                </div>
+                <button class="btn btn-send" type="button" id="sendButton">
+                    <i class="fas fa-paper-plane"></i>
+                    <div class="send-ripple"></div>
+                </button>
+            </div>
+            <div class="input-footer">
+                <small class="text-muted">
+                    <i class="fas fa-shield-alt"></i> Tu conversación es privada y segura
+                </small>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Modal para eliminar chat individual -->
+<div class="modal-overlay" id="deleteChatModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <div class="modal-icon delete-icon">
+                <i class="fas fa-trash-alt"></i>
+            </div>
+            <h3 class="modal-title">Eliminar Conversación</h3>
+            <button class="modal-close" id="closeDeleteModal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <p class="modal-message">
+                ¿Estás seguro de que quieres eliminar esta conversación? Esta acción no se puede deshacer.
+            </p>
+            <div class="modal-chat-preview" id="deleteChatPreview">
+                <!-- Se llenará dinámicamente -->
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button class="modal-btn modal-btn-cancel" id="cancelDeleteChat">
+                <i class="fas fa-times"></i>
+                <span>Cancelar</span>
+            </button>
+            <button class="modal-btn modal-btn-danger" id="confirmDeleteChat">
+                <i class="fas fa-trash-alt"></i>
+                <span>Eliminar</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para limpiar historial completo -->
+<div class="modal-overlay" id="clearHistoryModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <div class="modal-icon clear-icon">
+                <i class="fas fa-broom"></i>
+            </div>
+            <h3 class="modal-title">Limpiar Historial</h3>
+            <button class="modal-close" id="closeClearModal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <p class="modal-message">
+                ¿Estás seguro de que quieres eliminar <strong>todas</strong> las conversaciones? Esta acción no se puede deshacer.
+            </p>
+            <div class="modal-stats" id="clearHistoryStats">
+                <!-- Se llenará dinámicamente -->
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button class="modal-btn modal-btn-cancel" id="cancelClearHistory">
+                <i class="fas fa-times"></i>
+                <span>Cancelar</span>
+            </button>
+            <button class="modal-btn modal-btn-danger" id="confirmClearHistory">
+                <i class="fas fa-broom"></i>
+                <span>Limpiar Todo</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Nuevo diseño del header - colores neutros modernos */
+    .chat-header {
+        position: relative;
+        overflow: hidden;
+        padding: 20px;
+        background: linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%);
+        background-size: 200% 200%;
+        animation: headerGradientShift 12s ease infinite;
+    }
+
+    @keyframes headerGradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    .header-background-effects {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+    }
+
+    .floating-shapes {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+
+    .shape {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        animation: floatShape 6s ease-in-out infinite;
+    }
+
+    .shape-1 {
+        width: 80px;
+        height: 80px;
+        top: 10%;
+        left: 10%;
+        animation-delay: 0s;
+    }
+
+    .shape-2 {
+        width: 60px;
+        height: 60px;
+        top: 20%;
+        right: 15%;
+        animation-delay: 1.5s;
+    }
+
+    .shape-3 {
+        width: 100px;
+        height: 100px;
+        bottom: 20%;
+        left: 20%;
+        animation-delay: 3s;
+    }
+
+    .shape-4 {
+        width: 40px;
+        height: 40px;
+        bottom: 10%;
+        right: 25%;
+        animation-delay: 4.5s;
+    }
+
+    @keyframes floatShape {
+        0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+        50% { transform: translateY(-20px) rotate(180deg); opacity: 0.6; }
+    }
+
+    .header-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .header-main {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 15px;
+        gap: 15px;
+    }
+
+    .header-controls {
+        display: flex;
+        align-items: center;
+    }
+
+    .history-toggle-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        color: white;
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+
+    .history-toggle-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .history-toggle-btn:hover::before {
+        left: 100%;
+    }
+
+    .history-toggle-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 107, 157, 0.3);
+        background: rgba(255, 255, 255, 0.25);
+    }
+
+    .history-toggle-btn i {
+        font-size: 0.9rem;
+    }
+
+    .btn-glow {
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        border-radius: 20px;
+        background: linear-gradient(45deg, #64748b, #475569, #94a3b8);
+        background-size: 200% 200%;
+        animation: btnGlowRotate 3s linear infinite;
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .history-toggle-btn:hover .btn-glow {
+        opacity: 0.3;
+    }
+
+    @keyframes btnGlowRotate {
+        0% { background-position: 0% 50%; }
+        100% { background-position: 100% 50%; }
+    }
+
+    .robot-container {
+        position: relative;
+    }
+
+    .robot-avatar {
+        width: 50px;
+        height: 50px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        position: relative;
+        animation: robotFloat 4s ease-in-out infinite;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .robot-avatar:hover {
+        transform: scale(1.1) rotate(10deg);
+        box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+    }
+
+    @keyframes robotFloat {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-10px) rotate(5deg); }
+    }
+
+    .robot-glow {
+        position: absolute;
+        top: -8px;
+        left: -8px;
+        right: -8px;
+        bottom: -8px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #64748b, #94a3b8, #cbd5e1, #e2e8f0);
+        background-size: 200% 200%;
+        animation: glowRotate 6s linear infinite;
+        z-index: -1;
+        opacity: 0.2;
+    }
+
+    @keyframes glowRotate {
+        0% { background-position: 0% 50%; transform: rotate(0deg); }
+        100% { background-position: 100% 50%; transform: rotate(360deg); }
+    }
+
+    .robot-particles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+    }
+
+    .robot-particles .particle {
+        position: absolute;
+        width: 3px;
+        height: 3px;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 50%;
+        animation: particleOrbit 4s linear infinite;
+    }
+
+    .robot-particles .particle:nth-child(1) {
+        animation-delay: 0s;
+        top: 8px;
+        left: 50%;
+    }
+
+    .robot-particles .particle:nth-child(2) {
+        animation-delay: 1.3s;
+        top: 50%;
+        right: 8px;
+    }
+
+    .robot-particles .particle:nth-child(3) {
+        animation-delay: 2.6s;
+        bottom: 8px;
+        left: 50%;
+    }
+
+    @keyframes particleOrbit {
+        0% { transform: rotate(0deg) translateX(20px) rotate(0deg); opacity: 1; }
+        100% { transform: rotate(360deg) translateX(20px) rotate(-360deg); opacity: 0; }
+    }
+
+    .header-text {
+        text-align: center;
+        flex: 1;
+    }
+
+    .animated-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin: 0;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .title-word {
+        display: inline-block;
+        background: linear-gradient(45deg, #ffffff, #ecf0f1, #ffffff);
+        background-size: 200% 200%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: titleShimmer 4s ease-in-out infinite;
+    }
+
+    .title-word:nth-child(2) {
+        animation-delay: 0.3s;
+    }
+
+    @keyframes titleShimmer {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    .subtitle {
+        font-size: 0.85rem;
+        margin: 8px 0 0 0;
+        opacity: 0.85;
+        font-weight: 300;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .tech-showcase {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+    }
+
+    .tech-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 10px 14px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .tech-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .tech-item:hover::before {
+        left: 100%;
+    }
+
+    .tech-item:hover {
+        transform: translateY(-3px) scale(1.03);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .tech-icon {
+        font-size: 1.2rem;
+        margin-bottom: 6px;
+        color: rgba(255, 255, 255, 0.9);
+        animation: iconPulse 3s ease-in-out infinite;
+    }
+
+    .tech-item:nth-child(2) .tech-icon {
+        animation-delay: 0.5s;
+    }
+
+    .tech-item:nth-child(3) .tech-icon {
+        animation-delay: 1s;
+    }
+
+    @keyframes iconPulse {
+        0%, 100% { transform: scale(1); opacity: 0.9; }
+        50% { transform: scale(1.05); opacity: 1; }
+    }
+
+    .tech-name {
+        font-size: 0.7rem;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.9);
+        text-align: center;
+    }
+
+    .connection-status {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.08);
+        padding: 12px 18px;
+        border-radius: 20px;
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .status-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .status-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #22c55e;
+        position: relative;
+        box-shadow: 0 0 15px rgba(34, 197, 94, 0.5);
+    }
+
+    .pulse-ring {
+        position: absolute;
+        top: -4px;
+        left: -4px;
+        right: -4px;
+        bottom: -4px;
+        border: 1px solid #22c55e;
+        border-radius: 50%;
+        animation: pulseRing 3s ease-out infinite;
+    }
+
+    .pulse-ring-2 {
+        position: absolute;
+        top: -8px;
+        left: -8px;
+        right: -8px;
+        bottom: -8px;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        border-radius: 50%;
+        animation: pulseRing 3s ease-out infinite 0.8s;
+    }
+
+    @keyframes pulseRing {
+        0% { transform: scale(0.8); opacity: 1; }
+        100% { transform: scale(1.3); opacity: 0; }
+    }
+
+    .status-text {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+    }
+
+    .status-label {
+        font-size: 0.65rem;
+        opacity: 0.8;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .status-value {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: white;
+    }
+
+    .connection-stats {
+        display: flex;
+        gap: 15px;
+    }
+
+    .stat {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.7rem;
+        color: rgba(255, 255, 255, 0.9);
+        opacity: 0.9;
+    }
+
+    .stat i {
+        color: #eab308;
+        animation: statIconGlow 3s ease-in-out infinite;
+    }
+
+    @keyframes statIconGlow {
+        0%, 100% { text-shadow: 0 0 3px rgba(234, 179, 8, 0.4); }
+        50% { text-shadow: 0 0 8px rgba(234, 179, 8, 0.6); }
+    }
+
+    .message-text {
+        line-height: 1.6;
+    }
+
+    .emoji-sparkle {
+        display: inline-block;
+        animation: sparkle 1.5s ease-in-out infinite;
+        margin: 0 5px;
+    }
+
+    @keyframes sparkle {
+        0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        50% { transform: scale(1.2) rotate(180deg); opacity: 0.8; }
+    }
+
+    .typing-dots {
+        display: inline-block;
+        margin-right: 10px;
+    }
+
+    .typing-text {
+        font-style: italic;
+        color: #666;
+    }
+
+    .input-wrapper {
+        position: relative;
+        flex: 1;
+    }
+
+    .input-effects {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 30px;
+        background: linear-gradient(45deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+
+    .form-control:focus + .input-effects {
+        opacity: 1;
+        animation: inputGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes inputGlow {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    .send-ripple {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: all 0.3s ease;
+    }
+
+    .btn-send:active .send-ripple {
+        width: 100px;
+        height: 100px;
+    }
+
+    .input-footer {
+        text-align: center;
+        margin-top: 10px;
+        opacity: 0.7;
+    }
+
+    .input-footer i {
+        color: #475569;
+        margin-right: 5px;
+    }
+
+    /* Efectos de partículas para mensajes */
+    .message-content::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(45deg, #64748b, #475569, #94a3b8, #cbd5e1);
+        border-radius: 25px;
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .message-content:hover::before {
+        opacity: 0.1;
+    }
+
+    /* Animación de entrada mejorada para mensajes */
+    .message-enter {
+        animation: messageEnter 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes messageEnter {
+        0% {
+            opacity: 0;
+            transform: scale(0.3) translateY(30px) rotateX(90deg);
+        }
+        50% {
+            opacity: 0.8;
+            transform: scale(1.05) translateY(-10px) rotateX(0deg);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1) translateY(0) rotateX(0deg);
+        }
+    }
+
+    /* Efectos de hover mejorados */
+    .message-avatar::after {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: -5px;
+        right: -5px;
+        bottom: -5px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #64748b, #475569, #94a3b8);
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        animation: avatarRing 2s ease-in-out infinite;
+    }
+
+    .message-avatar:hover::after {
+        opacity: 0.3;
+    }
+
+    @keyframes avatarRing {
+        0%, 100% { transform: scale(1) rotate(0deg); }
+        50% { transform: scale(1.1) rotate(180deg); }
+    }
+
+    /* Animaciones para efectos de partículas */
+    @keyframes particleFloat {
+        0% {
+            transform: translate(0, 0) scale(1);
+            opacity: 1;
+        }
+        100% {
+            transform: translate(
+                ${Math.random() * 100 - 50}px, 
+                ${Math.random() * 100 - 50}px
+            ) scale(0);
+            opacity: 0;
+        }
+    }
+
+    @keyframes confettiFall {
+        0% {
+            transform: translateY(-10px) rotate(0deg);
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(${window.innerHeight + 100}px) rotate(720deg);
+            opacity: 0;
+        }
+    }
+
+    /* Efecto de pulso para el botón de envío */
+    .btn-send:focus {
+        animation: buttonPulse 0.6s ease-in-out;
+    }
+
+    @keyframes buttonPulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+
+    /* Efecto de escritura para el indicador de typing */
+    .typing-indicator.show .typing-dots {
+        animation: typingWave 1.4s ease-in-out infinite;
+    }
+
+    @keyframes typingWave {
+        0%, 60%, 100% {
+            transform: translateY(0);
+        }
+        30% {
+            transform: translateY(-10px);
+        }
+    }
+
+    /* Efecto de brillo en el header */
+    .chat-header::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        animation: headerShine 4s ease-in-out infinite;
+    }
+
+    @keyframes headerShine {
+        0% { left: -100%; }
+        50% { left: 100%; }
+        100% { left: 100%; }
+    }
+
+    /* Efecto de respiración para el contenedor */
+    .chat-container {
+        animation: containerBreathe 6s ease-in-out infinite;
+    }
+
+    @keyframes containerBreathe {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.01); }
+    }
+
+    /* Efecto de ondas en el fondo */
+    .chat-messages::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 30% 20%, rgba(255, 107, 157, 0.05) 0%, transparent 50%),
+                    radial-gradient(circle at 70% 80%, rgba(255, 159, 243, 0.05) 0%, transparent 50%);
+        animation: backgroundWaves 8s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    @keyframes backgroundWaves {
+        0%, 100% { opacity: 0.3; transform: scale(1); }
+        50% { opacity: 0.6; transform: scale(1.1); }
+    }
+
+    /* Responsive mejorado */
+    @media (max-width: 768px) {
+        .chat-header {
+            padding: 15px;
+        }
+
+        .header-main {
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .robot-avatar {
+            width: 45px;
+            height: 45px;
+            font-size: 1.3rem;
+        }
+
+        .animated-title {
+            font-size: 1.5rem;
+        }
+
+        .subtitle {
+            font-size: 0.8rem;
+        }
+
+        .tech-showcase {
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .tech-item {
+            padding: 8px 12px;
+        }
+
+        .tech-icon {
+            font-size: 1rem;
+        }
+
+        .tech-name {
+            font-size: 0.65rem;
+        }
+
+        .connection-status {
+            flex-direction: column;
+            gap: 12px;
+            padding: 12px 16px;
+        }
+
+        .connection-stats {
+            gap: 12px;
+        }
+
+        .stat {
+            font-size: 0.65rem;
+        }
+
+        .message-content {
+            max-width: 90%;
+        }
+
+        .btn-send {
+            width: 50px;
+            height: 50px;
+        }
+
+        .shape-1, .shape-2, .shape-3, .shape-4 {
+            display: none;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .chat-header {
+            padding: 12px;
+        }
+
+        .animated-title {
+            font-size: 1.3rem;
+        }
+
+        .subtitle {
+            font-size: 0.75rem;
+        }
+
+        .tech-showcase {
+            gap: 8px;
+        }
+
+        .tech-item {
+            padding: 6px 10px;
+        }
+
+        .tech-icon {
+            font-size: 0.9rem;
+        }
+
+        .tech-name {
+            font-size: 0.6rem;
+        }
+
+        .connection-status {
+            padding: 10px 14px;
+        }
+    }
+
+    /* Efectos adicionales para mejorar la experiencia */
+    .form-control::placeholder {
+        color: #999;
+        transition: color 0.3s ease;
+    }
+
+    .form-control:focus::placeholder {
+        color: #475569;
+    }
+
+    /* Efecto de hover mejorado para mensajes */
+    .message:hover .message-content {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Animación de carga para el indicador de typing */
+    .typing-indicator.show {
+        animation: typingSlideIn 0.3s ease-out;
+    }
+
+    @keyframes typingSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Estilos del panel de historial */
+    .history-panel {
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 350px;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 0 30px 30px 0;
+        box-shadow: 
+            0 0 50px rgba(0, 0, 0, 0.2),
+            0 0 0 1px rgba(255, 255, 255, 0.3);
+        z-index: 1000;
+        transition: left 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .history-panel.show {
+        left: 0;
+    }
+
+    .history-header {
+        padding: 20px;
+        background: linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%);
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .history-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        animation: historyShimmer 4s infinite;
+    }
+
+    @keyframes historyShimmer {
+        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+
+    .history-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        position: relative;
+        z-index: 2;
+    }
+
+    .history-title i {
+        font-size: 1.2rem;
+        animation: historyIconPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes historyIconPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    .history-decoration {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-left: 10px;
+    }
+
+    .decoration-line {
+        width: 20px;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 1px;
+        animation: decorationLine 3s ease-in-out infinite;
+    }
+
+    .decoration-line:nth-child(3) {
+        animation-delay: 0.5s;
+    }
+
+    @keyframes decorationLine {
+        0%, 100% { opacity: 0.6; transform: scaleX(1); }
+        50% { opacity: 1; transform: scaleX(1.2); }
+    }
+
+    .decoration-dot {
+        width: 6px;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 50%;
+        animation: decorationDot 2s ease-in-out infinite;
+    }
+
+    @keyframes decorationDot {
+        0%, 100% { transform: scale(1); opacity: 0.8; }
+        50% { transform: scale(1.3); opacity: 1; }
+    }
+
+    .history-close-btn {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 2;
+    }
+
+    .history-close-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1) rotate(90deg);
+    }
+
+    .history-content {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .history-search {
+        position: relative;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .search-input-wrapper i {
+        position: absolute;
+        left: 15px;
+        color: #475569;
+        z-index: 2;
+        font-size: 0.9rem;
+    }
+
+    .search-input-wrapper input {
+        width: 100%;
+        padding: 12px 15px 12px 40px;
+        border: 2px solid rgba(255, 107, 157, 0.2);
+        border-radius: 25px;
+        font-size: 0.9rem;
+        background: rgba(255, 255, 255, 0.8);
+        transition: all 0.3s ease;
+    }
+
+    .search-input-wrapper input:focus {
+        outline: none;
+        border-color: #475569;
+        box-shadow: 0 0 15px rgba(71, 85, 105, 0.2);
+        background: white;
+    }
+
+    .search-effects {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 25px;
+        background: linear-gradient(45deg, transparent, rgba(255, 107, 157, 0.1), transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+
+    .search-input-wrapper input:focus + .search-effects {
+        opacity: 1;
+        animation: searchGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes searchGlow {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    .history-filters {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .filter-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        background: rgba(255, 107, 157, 0.1);
+        border: 1px solid rgba(255, 107, 157, 0.2);
+        border-radius: 20px;
+        color: #475569;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .filter-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 107, 157, 0.2), transparent);
+        transition: left 0.3s;
+    }
+
+    .filter-btn:hover::before {
+        left: 100%;
+    }
+
+    .filter-btn:hover {
+        background: rgba(148, 163, 184, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .filter-btn.active {
+        background: linear-gradient(135deg, #64748b, #475569);
+        color: white;
+        box-shadow: 0 4px 15px rgba(100, 116, 139, 0.3);
+    }
+
+    .filter-btn i {
+        font-size: 0.8rem;
+    }
+
+    .history-list {
+        flex: 1;
+        overflow-y: auto;
+        padding-right: 5px;
+    }
+
+    .history-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .history-list::-webkit-scrollbar-track {
+        background: rgba(255, 107, 157, 0.1);
+        border-radius: 10px;
+    }
+
+    .history-list::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #64748b, #475569);
+        border-radius: 10px;
+    }
+
+    .history-list::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #94a3b8, #cbd5e1);
+    }
+
+    .history-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 200px;
+        text-align: center;
+        color: #999;
+    }
+
+    .empty-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: rgba(255, 107, 157, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 15px;
+        animation: emptyIconFloat 3s ease-in-out infinite;
+    }
+
+    @keyframes emptyIconFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .empty-icon i {
+        font-size: 1.5rem;
+        color: #475569;
+    }
+
+    .history-empty h3 {
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+        color: #666;
+    }
+
+    .history-empty p {
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    .history-footer {
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.8);
+        border-top: 1px solid rgba(255, 107, 157, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .clear-history-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        background: rgba(148, 163, 184, 0.1);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 20px;
+        color: #475569;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .clear-history-btn:hover {
+        background: rgba(148, 163, 184, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(148, 163, 184, 0.2);
+    }
+
+    .history-stats {
+        display: flex;
+        gap: 15px;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.8rem;
+        color: #666;
+    }
+
+    .stat-item i {
+        color: #475569;
+        font-size: 0.9rem;
+    }
+
+    /* Estilos para el botón de nueva conversación */
+    .new-chat-section {
+        margin: 15px 0;
+    }
+
+    .new-chat-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 15px 20px;
+        background: linear-gradient(135deg, #64748b, #475569);
+        border: none;
+        border-radius: 20px;
+        color: white;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(100, 116, 139, 0.3);
+    }
+
+    .new-chat-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .new-chat-btn:hover::before {
+        left: 100%;
+    }
+
+    .new-chat-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(100, 116, 139, 0.4);
+    }
+
+    .new-chat-icon {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .new-chat-glow {
+        position: absolute;
+        top: -3px;
+        left: -3px;
+        right: -3px;
+        bottom: -3px;
+        border-radius: 20px;
+        background: linear-gradient(45deg, #64748b, #475569, #334155, #1e293b);
+        background-size: 300% 300%;
+        animation: newChatGlow 3s linear infinite;
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .new-chat-btn:hover .new-chat-glow {
+        opacity: 0.3;
+    }
+
+    @keyframes newChatGlow {
+        0% { background-position: 0% 50%; }
+        100% { background-position: 100% 50%; }
+    }
+
+    /* Estilos mejorados para elementos del historial */
+    .history-item {
+        background: rgba(255, 255, 255, 0.9);
+        border: 2px solid rgba(148, 163, 184, 0.2);
+        border-radius: 15px;
+        padding: 15px;
+        margin-bottom: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .history-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.1), transparent);
+        transition: left 0.3s;
+    }
+
+    .history-item:hover::before {
+        left: 100%;
+    }
+
+    .history-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(148, 163, 184, 0.2);
+        border-color: rgba(148, 163, 184, 0.4);
+    }
+
+    .session-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .session-title {
+        font-weight: 700;
+        color: #1f2937;
+        font-size: 1rem;
+        flex: 1;
+    }
+
+    .session-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .delete-session-btn {
+        width: 24px;
+        height: 24px;
+        border: none;
+        border-radius: 50%;
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.7rem;
+    }
+
+    .delete-session-btn:hover {
+        background: rgba(239, 68, 68, 0.2);
+        transform: scale(1.1);
+    }
+
+    .session-preview {
+        margin-top: 8px;
+    }
+
+    .session-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+
+    .session-date {
+        font-weight: 500;
+    }
+
+    .session-messages-count {
+        background: rgba(148, 163, 184, 0.1);
+        color: #475569;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+
+    .session-content-preview {
+        color: #4b5563;
+        font-size: 0.85rem;
+        line-height: 1.4;
+        font-weight: 500;
+    }
+
+    .history-item-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+
+    .history-avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #64748b, #475569);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        box-shadow: 0 3px 10px rgba(100, 116, 139, 0.3);
+    }
+
+    .history-item-info {
+        flex: 1;
+    }
+
+    .history-role {
+        font-weight: 700;
+        color: #333;
+        font-size: 0.95rem;
+        margin-bottom: 2px;
+    }
+
+    .history-time {
+        font-size: 0.75rem;
+        color: #999;
+        font-weight: 500;
+    }
+
+    .history-content-preview {
+        color: #555;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        font-weight: 500;
+    }
+
+    /* Indicador de mensaje del usuario */
+    .user-message-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(148, 163, 184, 0.1);
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        color: #475569;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .user-message-indicator i {
+        font-size: 0.6rem;
+    }
+
+    /* Estilos para modales */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .modal-overlay.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .modal-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        box-shadow: 
+            0 25px 50px rgba(0, 0, 0, 0.25),
+            0 0 0 1px rgba(255, 255, 255, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        max-width: 480px;
+        width: 90%;
+        max-height: 90vh;
+        overflow: hidden;
+        transform: scale(0.8) translateY(50px);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 2px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .modal-overlay.show .modal-container {
+        transform: scale(1) translateY(0);
+    }
+
+    .modal-header {
+        padding: 24px 24px 16px;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        position: relative;
+    }
+
+    .modal-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .delete-icon {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+    }
+
+    .clear-icon {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+    }
+
+    .modal-icon::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        animation: modalIconShimmer 3s linear infinite;
+    }
+
+    @keyframes modalIconShimmer {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .modal-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0;
+        flex: 1;
+    }
+
+    .modal-close {
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 50%;
+        background: rgba(107, 114, 128, 0.1);
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+    }
+
+    .modal-close:hover {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        transform: scale(1.1);
+    }
+
+    .modal-body {
+        padding: 20px 24px;
+    }
+
+    .modal-message {
+        font-size: 1rem;
+        color: #4b5563;
+        line-height: 1.6;
+        margin: 0 0 20px;
+    }
+
+    .modal-chat-preview {
+        background: rgba(148, 163, 184, 0.05);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 12px;
+        padding: 16px;
+        margin-top: 16px;
+    }
+
+    .modal-chat-preview .preview-title {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+    }
+
+    .modal-chat-preview .preview-content {
+        color: #6b7280;
+        font-size: 0.85rem;
+        line-height: 1.4;
+    }
+
+    .modal-stats {
+        background: rgba(148, 163, 184, 0.05);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 12px;
+        padding: 16px;
+        margin-top: 16px;
+        display: flex;
+        justify-content: space-around;
+        text-align: center;
+    }
+
+    .modal-stats .stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .modal-stats .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #475569;
+    }
+
+    .modal-stats .stat-label {
+        font-size: 0.8rem;
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+    .modal-footer {
+        padding: 16px 24px 24px;
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+    }
+
+    .modal-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        min-width: 120px;
+        justify-content: center;
+    }
+
+    .modal-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.3s;
+    }
+
+    .modal-btn:hover::before {
+        left: 100%;
+    }
+
+    .modal-btn-cancel {
+        background: rgba(107, 114, 128, 0.1);
+        color: #6b7280;
+        border: 1px solid rgba(107, 114, 128, 0.2);
+    }
+
+    .modal-btn-cancel:hover {
+        background: rgba(107, 114, 128, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(107, 114, 128, 0.2);
+    }
+
+    .modal-btn-danger {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .modal-btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+    }
+
+    .modal-btn i {
+        font-size: 0.8rem;
+    }
+
+    /* Animaciones de entrada para modales */
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: scale(0.8) translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    @keyframes modalSlideOut {
+        from {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+        to {
+            opacity: 0;
+            transform: scale(0.8) translateY(50px);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+class ChatApp {
+    constructor() {
+        this.userId = this.generateUserId();
+        this.messageInput = document.getElementById('messageInput');
+        this.sendButton = document.getElementById('sendButton');
+        this.chatMessages = document.getElementById('chatMessages');
+        this.typingIndicator = document.getElementById('typingIndicator');
+        this.isRestoringMessage = false; // Flag para evitar duplicados
+        
+        // Elementos del historial
+        this.historyPanel = document.getElementById('historyPanel');
+        this.historyToggle = document.getElementById('historyToggle');
+        this.historyClose = document.getElementById('historyClose');
+        this.historySearch = document.getElementById('historySearch');
+        this.historyList = document.getElementById('historyList');
+        this.clearHistoryBtn = document.getElementById('clearHistory');
+        this.totalMessages = document.getElementById('totalMessages');
+        this.totalTime = document.getElementById('totalTime');
+        this.newChatBtn = document.getElementById('newChatBtn');
+
+        // Elementos de modales
+        this.deleteChatModal = document.getElementById('deleteChatModal');
+        this.clearHistoryModal = document.getElementById('clearHistoryModal');
+        this.deleteChatPreview = document.getElementById('deleteChatPreview');
+        this.clearHistoryStats = document.getElementById('clearHistoryStats');
+        this.sessionToDelete = null;
+        
+        this.initializeEventListeners();
+        this.loadChatHistory();
+        this.setWelcomeTime();
+        this.initializeHistory();
+    }
+    
+    generateUserId() {
+        // Generar un ID único para el usuario
+        return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+    
+    initializeEventListeners() {
+        this.sendButton.addEventListener('click', () => this.sendMessage());
+        this.messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                this.sendMessage();
+            }
+        });
+
+        // Event listeners del historial
+        this.historyToggle.addEventListener('click', () => this.toggleHistory());
+        this.historyClose.addEventListener('click', () => this.closeHistory());
+        this.historySearch.addEventListener('input', () => this.searchHistory());
+        this.clearHistoryBtn.addEventListener('click', () => this.showClearHistoryModal());
+        this.newChatBtn.addEventListener('click', () => this.startNewChat());
+        
+        // Filtros del historial
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => this.setHistoryFilter(e.target.dataset.filter));
+        });
+
+        // Event listeners de modales
+        this.initializeModalEventListeners();
+
+        // Cerrar historial al hacer clic fuera (pero no cuando hay modales abiertos)
+        document.addEventListener('click', (e) => {
+            if (!this.historyPanel.contains(e.target) && 
+                !this.historyToggle.contains(e.target) &&
+                !this.deleteChatModal.contains(e.target) &&
+                !this.clearHistoryModal.contains(e.target)) {
+                this.closeHistory();
+            }
+        });
+    }
+    
+    setWelcomeTime() {
+        const welcomeTime = document.getElementById('welcomeTime');
+        welcomeTime.textContent = this.formatTime(new Date());
+    }
+    
+    async sendMessage() {
+        const message = this.messageInput.value.trim();
+        if (!message) return;
+        
+        // Agregar mensaje del usuario
+        this.addMessage(message, 'user');
+        this.messageInput.value = '';
+        
+        // Mostrar indicador de escritura
+        this.showTypingIndicator();
+        
+        try {
+            const response = await fetch('/send-message/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': this.getCSRFToken()
+                },
+                body: JSON.stringify({
+                    message: message,
+                    user_id: this.userId
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                if (data.image) {
+                    this.addMessage(data.image, 'bot', data.timestamp, 'image');
+                }
+                if (data.bot_response) {
+                    this.addMessage(data.bot_response, 'bot', data.timestamp);
+                }
+            } else {
+                this.addMessage('Lo siento, hubo un error procesando tu mensaje.', 'bot');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            this.addMessage('Error de conexión. Por favor, inténtalo de nuevo.', 'bot');
+        } finally {
+            this.hideTypingIndicator();
+        }
+    }
+    
+    addMessage(content, sender, timestamp = null, type = 'text') {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender} message-enter`;
+        
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        avatar.innerHTML = sender === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+        
+        // Agregar efecto de partículas al avatar
+        this.addParticleEffect(avatar);
+        
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message-content';
+        
+        if (type === 'image' && content && content.startsWith('data:image')) {
+            const imgEl = document.createElement('img');
+            imgEl.src = content;
+            imgEl.alt = 'Imagen generada';
+            imgEl.style.maxWidth = '100%';
+            imgEl.style.borderRadius = '15px';
+            imgEl.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+            messageContent.appendChild(imgEl);
+        } else {
+            const messageText = document.createElement('div');
+            messageText.className = 'message-text';
+            messageText.textContent = content;
+            messageContent.appendChild(messageText);
+        }
+        
+        if (timestamp) {
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'timestamp';
+            timeDiv.textContent = this.formatTime(new Date(timestamp));
+            messageContent.appendChild(timeDiv);
+        } else {
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'timestamp';
+            timeDiv.textContent = this.formatTime(new Date());
+            messageContent.appendChild(timeDiv);
+        }
+        
+        messageDiv.appendChild(avatar);
+        messageDiv.appendChild(messageContent);
+        
+        this.chatMessages.appendChild(messageDiv);
+        
+        // Agregar efecto de entrada escalonada
+        setTimeout(() => {
+            messageDiv.style.animation = 'messageEnter 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        }, 100);
+        
+        this.scrollToBottom();
+        
+        // Agregar efecto de confeti para mensajes del usuario
+        if (sender === 'user') {
+            this.addConfettiEffect();
+        }
+
+        // Guardar en historial solo si no estamos restaurando un mensaje
+        if (!this.isRestoringMessage) {
+            this.saveToHistory(content, sender);
+        }
+    }
+
+    addParticleEffect(element) {
+        for (let i = 0; i < 5; i++) {
+            setTimeout(() => {
+                const particle = document.createElement('div');
+                particle.style.cssText = `
+                    position: absolute;
+                    width: 4px;
+                    height: 4px;
+                    background: linear-gradient(45deg, #667eea, #764ba2);
+                    border-radius: 50%;
+                    pointer-events: none;
+                    z-index: 1000;
+                    animation: particleFloat 1s ease-out forwards;
+                `;
+                
+                const rect = element.getBoundingClientRect();
+                particle.style.left = rect.left + rect.width / 2 + 'px';
+                particle.style.top = rect.top + rect.height / 2 + 'px';
+                
+                document.body.appendChild(particle);
+                
+                setTimeout(() => {
+                    particle.remove();
+                }, 1000);
+            }, i * 100);
+        }
+    }
+
+    addConfettiEffect() {
+        const colors = ['#64748b', '#94a3b8', '#cbd5e1', '#e2e8f0', '#f1f5f9', '#f8fafc'];
+        
+        for (let i = 0; i < 20; i++) {
+            setTimeout(() => {
+                const confetti = document.createElement('div');
+                confetti.style.cssText = `
+                    position: fixed;
+                    width: 8px;
+                    height: 8px;
+                    background: ${colors[Math.floor(Math.random() * colors.length)]};
+                    border-radius: 50%;
+                    pointer-events: none;
+                    z-index: 1000;
+                    animation: confettiFall 2s ease-out forwards;
+                `;
+                
+                confetti.style.left = Math.random() * window.innerWidth + 'px';
+                confetti.style.top = '-10px';
+                
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => {
+                    confetti.remove();
+                }, 2000);
+            }, i * 50);
+        }
+    }
+    
+    showTypingIndicator() {
+        this.typingIndicator.classList.add('show');
+        this.scrollToBottom();
+    }
+    
+    hideTypingIndicator() {
+        this.typingIndicator.classList.remove('show');
+    }
+    
+    scrollToBottom() {
+        this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+    }
+    
+    formatTime(date) {
+        return date.toLocaleTimeString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+    
+    getCSRFToken() {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'csrftoken') {
+                return value;
+            }
+        }
+        return '';
+    }
+    
+    async loadChatHistory() {
+        try {
+            const response = await fetch('/get-history/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': this.getCSRFToken()
+                },
+                body: JSON.stringify({
+                    user_id: this.userId
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success && data.messages.length > 0) {
+                // Limpiar mensaje de bienvenida
+                this.chatMessages.innerHTML = '';
+                
+                // Cargar historial
+                data.messages.forEach(msg => {
+                    this.addMessage(msg.content, msg.role, msg.timestamp);
+                });
+            }
+        } catch (error) {
+            console.error('Error cargando historial:', error);
+        }
+    }
+
+    // Funciones del historial
+    initializeHistory() {
+        this.chatSessions = JSON.parse(localStorage.getItem('chatSessions') || '[]');
+        this.currentSessionId = null;
+        this.currentSession = null;
+        this.currentFilter = 'all';
+        this.updateHistoryDisplay();
+        this.updateHistoryStats();
+    }
+
+    toggleHistory() {
+        this.historyPanel.classList.toggle('show');
+        if (this.historyPanel.classList.contains('show')) {
+            this.updateHistoryDisplay();
+        }
+    }
+
+    closeHistory() {
+        this.historyPanel.classList.remove('show');
+    }
+
+    searchHistory() {
+        const searchTerm = this.historySearch.value.toLowerCase();
+        this.updateHistoryDisplay(searchTerm);
+    }
+
+    setHistoryFilter(filter) {
+        this.currentFilter = filter;
+        
+        // Actualizar botones activos
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+        
+        this.updateHistoryDisplay();
+    }
+
+    updateHistoryDisplay(searchTerm = '') {
+        let filteredSessions = this.chatSessions;
+
+        // Aplicar filtro de fecha
+        if (this.currentFilter !== 'all') {
+            const now = new Date();
+            filteredSessions = filteredSessions.filter(session => {
+                const sessionDate = new Date(session.createdAt);
+                switch (this.currentFilter) {
+                    case 'today':
+                        return sessionDate.toDateString() === now.toDateString();
+                    case 'week':
+                        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                        return sessionDate >= weekAgo;
+                    default:
+                        return true;
+                }
+            });
+        }
+
+        // Aplicar búsqueda
+        if (searchTerm) {
+            filteredSessions = filteredSessions.filter(session => 
+                session.title.toLowerCase().includes(searchTerm) ||
+                session.messages.some(msg => msg.content.toLowerCase().includes(searchTerm))
+            );
+        }
+
+        this.renderHistoryList(filteredSessions);
+    }
+
+    renderHistoryList(data) {
+        if (data.length === 0) {
+            this.historyList.innerHTML = `
+                <div class="history-empty">
+                    <div class="empty-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3>No hay conversaciones</h3>
+                    <p>Tu historial de conversaciones aparecerá aquí</p>
+                </div>
+            `;
+            return;
+        }
+
+        const historyHTML = data.map(session => `
+            <div class="history-item" data-session-id="${session.id}">
+                <div class="session-header">
+                    <div class="session-title">${session.title}</div>
+                    <div class="session-actions">
+                        <button class="delete-session-btn" data-session-id="${session.id}" title="Eliminar conversación">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="session-preview">
+                    <div class="session-info">
+                        <span class="session-date">${this.formatTime(new Date(session.createdAt))}</span>
+                        <span class="session-messages-count">${session.messages.length} mensajes</span>
+                    </div>
+                    <div class="session-content-preview">
+                        ${session.messages.length > 0 ? 
+                            (session.messages[session.messages.length - 1].content.length > 80 ? 
+                                session.messages[session.messages.length - 1].content.substring(0, 80) + '...' : 
+                                session.messages[session.messages.length - 1].content) : 
+                            'Conversación vacía'}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        this.historyList.innerHTML = historyHTML;
+
+        // Agregar event listeners para hacer clic en los mensajes
+        this.addHistoryItemClickListeners();
+
+        // Agregar estilos para los elementos del historial
+        this.addHistoryItemStyles();
+    }
+
+    addHistoryItemStyles() {
+        if (!document.getElementById('historyItemStyles')) {
+            const style = document.createElement('style');
+            style.id = 'historyItemStyles';
+            style.textContent = `
+                .history-item {
+                    background: rgba(255, 255, 255, 0.8);
+                    border: 1px solid rgba(255, 107, 157, 0.1);
+                    border-radius: 15px;
+                    padding: 15px;
+                    margin-bottom: 10px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    position: relative;
+                    overflow: hidden;
+                }
+
+                .history-item::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: -100%;
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(90deg, transparent, rgba(255, 107, 157, 0.1), transparent);
+                    transition: left 0.3s;
+                }
+
+                .history-item:hover::before {
+                    left: 100%;
+                }
+
+                .history-item:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(255, 107, 157, 0.15);
+                    border-color: rgba(255, 107, 157, 0.3);
+                }
+
+                .history-item-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    margin-bottom: 10px;
+                }
+
+                .history-avatar {
+                    width: 30px;
+                    height: 30px;
+                    border-radius: 50%;
+                    background: linear-gradient(135deg, #64748b, #475569);
+                    color: white;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 0.8rem;
+                }
+
+                .history-item-info {
+                    flex: 1;
+                }
+
+                .history-role {
+                    font-weight: 600;
+                    color: #333;
+                    font-size: 0.9rem;
+                }
+
+                .history-time {
+                    font-size: 0.75rem;
+                    color: #999;
+                }
+
+                .history-content-preview {
+                    color: #666;
+                    font-size: 0.85rem;
+                    line-height: 1.4;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+
+    addHistoryItemClickListeners() {
+        const historyItems = document.querySelectorAll('.history-item');
+        historyItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                // Evitar que el clic en el botón de eliminar active la navegación
+                if (e.target.closest('.delete-session-btn')) return;
+                
+                const sessionId = item.dataset.sessionId;
+                this.loadChatSession(sessionId);
+            });
+        });
+
+        // Event listeners para botones de eliminar
+        const deleteButtons = document.querySelectorAll('.delete-session-btn');
+        deleteButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const sessionId = btn.dataset.sessionId;
+                this.showDeleteChatModal(sessionId);
+            });
+        });
+    }
+
+    loadChatSession(sessionId) {
+        const session = this.chatSessions.find(s => s.id === sessionId);
+        if (!session) return;
+
+        // Cerrar el panel de historial
+        this.closeHistory();
+        
+        // Establecer la sesión actual
+        this.currentSessionId = sessionId;
+        this.currentSession = session;
+        
+        // Limpiar el chat actual
+        this.chatMessages.innerHTML = '';
+        
+        // Activar flag para evitar duplicados en historial
+        this.isRestoringMessage = true;
+        
+        // Cargar todos los mensajes de la sesión
+        session.messages.forEach(msg => {
+            this.addMessage(msg.content, msg.role, msg.timestamp);
+        });
+        
+        // Desactivar flag después de agregar los mensajes
+        this.isRestoringMessage = false;
+        
+        // Enfocar el input
+        this.messageInput.focus();
+        
+        // Scroll al final
+        this.scrollToBottom();
+    }
+
+    startNewChat() {
+        // Cerrar el panel de historial
+        this.closeHistory();
+        
+        // Limpiar el chat actual
+        this.chatMessages.innerHTML = '';
+        
+        // Crear nueva sesión
+        this.createNewSession();
+        
+        // Agregar mensaje de bienvenida
+        this.addWelcomeMessage();
+        
+        // Enfocar el input
+        this.messageInput.focus();
+        
+        // Generar nuevo ID de usuario para la nueva conversación
+        this.userId = this.generateUserId();
+    }
+
+    createNewSession() {
+        const newSession = {
+            id: 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            title: 'Nueva conversación',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            messages: []
+        };
+        
+        this.currentSessionId = newSession.id;
+        this.currentSession = newSession;
+        
+        // Agregar a la lista de sesiones
+        this.chatSessions.unshift(newSession);
+        this.saveSessions();
+    }
+
+    addWelcomeMessage() {
+        const welcomeMessage = document.createElement('div');
+        welcomeMessage.className = 'message bot message-enter';
+        welcomeMessage.innerHTML = `
+            <div class="message-avatar">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="message-content">
+                <div class="message-text">
+                    ¡Hola! 👋 Soy tu asistente virtual inteligente. 
+                    <br>Estoy aquí para ayudarte con cualquier pregunta que tengas.
+                    <br><br>
+                    <span class="emoji-sparkle">✨</span> Puedo:
+                    <br>• Responder preguntas generales
+                    <br>• Ayudarte con tareas específicas
+                    <br>• Mantener conversaciones naturales
+                    <br><br>
+                    ¿En qué puedo ayudarte hoy?
+                </div>
+                <div class="timestamp">${this.formatTime(new Date())}</div>
+            </div>
+        `;
+        this.chatMessages.appendChild(welcomeMessage);
+        this.scrollToBottom();
+    }
+
+    updateHistoryStats() {
+        const totalSessions = this.chatSessions.length;
+        const totalMessages = this.chatSessions.reduce((sum, session) => sum + session.messages.length, 0);
+        
+        this.totalMessages.textContent = `${totalMessages} mensajes`;
+        this.totalTime.textContent = `${totalSessions} chats`;
+    }
+
+    saveToHistory(content, role) {
+        if (!this.currentSession) {
+            this.createNewSession();
+        }
+
+        const message = {
+            content: content,
+            role: role,
+            timestamp: new Date().toISOString()
+        };
+        
+        this.currentSession.messages.push(message);
+        this.currentSession.updatedAt = new Date().toISOString();
+        
+        // Actualizar título si es el primer mensaje del usuario
+        if (role === 'user' && this.currentSession.messages.filter(m => m.role === 'user').length === 1) {
+            this.currentSession.title = content.length > 30 ? content.substring(0, 30) + '...' : content;
+        }
+        
+        this.saveSessions();
+        
+        if (this.historyPanel.classList.contains('show')) {
+            this.updateHistoryDisplay();
+        }
+        this.updateHistoryStats();
+    }
+
+    saveSessions() {
+        localStorage.setItem('chatSessions', JSON.stringify(this.chatSessions));
+    }
+
+    deleteChatSession(sessionId) {
+        if (confirm('¿Estás seguro de que quieres eliminar esta conversación?')) {
+            this.chatSessions = this.chatSessions.filter(session => session.id !== sessionId);
+            
+            // Si eliminamos la sesión actual, crear una nueva
+            if (this.currentSessionId === sessionId) {
+                this.createNewSession();
+                this.chatMessages.innerHTML = '';
+                this.addWelcomeMessage();
+            }
+            
+            this.saveSessions();
+            this.updateHistoryDisplay();
+            this.updateHistoryStats();
+        }
+    }
+
+    // Funciones de modales
+    initializeModalEventListeners() {
+        // Modal de eliminar chat
+        document.getElementById('closeDeleteModal').addEventListener('click', () => this.hideDeleteChatModal());
+        document.getElementById('cancelDeleteChat').addEventListener('click', () => this.hideDeleteChatModal());
+        document.getElementById('confirmDeleteChat').addEventListener('click', () => this.confirmDeleteChat());
+
+        // Modal de limpiar historial
+        document.getElementById('closeClearModal').addEventListener('click', () => this.hideClearHistoryModal());
+        document.getElementById('cancelClearHistory').addEventListener('click', () => this.hideClearHistoryModal());
+        document.getElementById('confirmClearHistory').addEventListener('click', () => this.confirmClearHistory());
+
+        // Cerrar modales al hacer clic fuera
+        this.deleteChatModal.addEventListener('click', (e) => {
+            if (e.target === this.deleteChatModal) {
+                this.hideDeleteChatModal();
+            }
+        });
+
+        this.clearHistoryModal.addEventListener('click', (e) => {
+            if (e.target === this.clearHistoryModal) {
+                this.hideClearHistoryModal();
+            }
+        });
+
+        // Prevenir que el historial se cierre cuando se abren modales
+        this.deleteChatModal.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        this.clearHistoryModal.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    }
+
+    showDeleteChatModal(sessionId) {
+        const session = this.chatSessions.find(s => s.id === sessionId);
+        if (!session) return;
+
+        this.sessionToDelete = sessionId;
+        
+        // Asegurar que el historial esté abierto
+        if (!this.historyPanel.classList.contains('show')) {
+            this.historyPanel.classList.add('show');
+        }
+        
+        // Llenar preview del chat
+        this.deleteChatPreview.innerHTML = `
+            <div class="preview-title">${session.title}</div>
+            <div class="preview-content">
+                ${session.messages.length > 0 ? 
+                    (session.messages[session.messages.length - 1].content.length > 100 ? 
+                        session.messages[session.messages.length - 1].content.substring(0, 100) + '...' : 
+                        session.messages[session.messages.length - 1].content) : 
+                    'Sin mensajes'}
+            </div>
+        `;
+
+        this.deleteChatModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    hideDeleteChatModal() {
+        this.deleteChatModal.classList.remove('show');
+        document.body.style.overflow = '';
+        this.sessionToDelete = null;
+        // Mantener el historial abierto
+        if (!this.historyPanel.classList.contains('show')) {
+            this.historyPanel.classList.add('show');
+        }
+    }
+
+    confirmDeleteChat() {
+        if (this.sessionToDelete) {
+            this.deleteChatSession(this.sessionToDelete);
+            this.hideDeleteChatModal();
+            // Mantener el historial abierto después de eliminar
+            if (!this.historyPanel.classList.contains('show')) {
+                this.historyPanel.classList.add('show');
+            }
+        }
+    }
+
+    showClearHistoryModal() {
+        const totalSessions = this.chatSessions.length;
+        const totalMessages = this.chatSessions.reduce((sum, session) => sum + session.messages.length, 0);
+
+        // Asegurar que el historial esté abierto
+        if (!this.historyPanel.classList.contains('show')) {
+            this.historyPanel.classList.add('show');
+        }
+
+        // Llenar estadísticas
+        this.clearHistoryStats.innerHTML = `
+            <div class="stat-item">
+                <div class="stat-value">${totalSessions}</div>
+                <div class="stat-label">Conversaciones</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">${totalMessages}</div>
+                <div class="stat-label">Mensajes</div>
+            </div>
+        `;
+
+        this.clearHistoryModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    hideClearHistoryModal() {
+        this.clearHistoryModal.classList.remove('show');
+        document.body.style.overflow = '';
+        // Mantener el historial abierto
+        if (!this.historyPanel.classList.contains('show')) {
+            this.historyPanel.classList.add('show');
+        }
+    }
+
+    confirmClearHistory() {
+        this.clearHistory();
+        this.hideClearHistoryModal();
+        // Mantener el historial abierto después de limpiar
+        if (!this.historyPanel.classList.contains('show')) {
+            this.historyPanel.classList.add('show');
+        }
+    }
+
+    clearHistory() {
+        this.chatSessions = [];
+        localStorage.removeItem('chatSessions');
+        this.createNewSession();
+        this.chatMessages.innerHTML = '';
+        this.addWelcomeMessage();
+        this.updateHistoryDisplay();
+        this.updateHistoryStats();
+    }
+}
+
+// Inicializar la aplicación cuando se carga la página
+document.addEventListener('DOMContentLoaded', () => {
+    new ChatApp();
+});
+</script>
+{% endblock %}
