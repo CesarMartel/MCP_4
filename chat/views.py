@@ -81,6 +81,7 @@ def send_message(request):
         'error': 'Método no permitido'
     }, status=405)
 
+@csrf_exempt
 def clear_conversation(request):
     """
     Vista para limpiar la conversación actual
