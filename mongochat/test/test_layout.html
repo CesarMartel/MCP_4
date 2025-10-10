@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Layout - MongoChat</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .code {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+        
+        .button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test de Layout - MongoChat</h1>
+        
+        <div class="status success">
+            ✅ Frontend React ejecutándose en: <strong>http://localhost:3000</strong>
+        </div>
+        
+        <div class="status info">
+            ℹ️ Backend Django ejecutándose en: <strong>http://127.0.0.1:8000</strong>
+        </div>
+        
+        <h2>🔧 Problemas Solucionados:</h2>
+        <ul>
+            <li>✅ <strong>Panel de historial no tapa el chat</strong> - Ajustado CSS con margin-left</li>
+            <li>✅ <strong>Sidebar responsive</strong> - Se oculta en móviles, se muestra en escritorio</li>
+            <li>✅ <strong>Transiciones suaves</strong> - Animaciones de 0.3s</li>
+            <li>✅ <strong>Z-index correcto</strong> - Sidebar no interfiere con contenido</li>
+        </ul>
+        
+        <h2>📱 Comportamiento por Dispositivo:</h2>
+        <div class="code">
+            <strong>Escritorio (>768px):</strong>
+            - Sidebar visible por defecto
+            - Contenido principal con margin-left: 300px cuando sidebar abierto
+            - Contenido principal sin margin cuando sidebar cerrado
+            
+            <strong>Móvil (≤768px):</strong>
+            - Sidebar oculto por defecto
+            - Sidebar se desliza desde la izquierda cuando se abre
+            - Overlay oscuro cuando sidebar está abierto
+            - Sidebar se cierra automáticamente al seleccionar un chat
+        </div>
+        
+        <h2>🎨 Características del Panel de Historial:</h2>
+        <ul>
+            <li>📚 Lista de conversaciones con títulos dinámicos</li>
+            <li>🕒 Fechas formateadas inteligentemente</li>
+            <li>📊 Contador de mensajes por conversación</li>
+            <li>🗑️ Botón de eliminar conversaciones</li>
+            <li>🆕 Botón "Nueva conversación"</li>
+            <li>📊 Contador total de conversaciones</li>
+            <li>💾 Persistencia en localStorage</li>
+        </ul>
+        
+        <h2>🚀 Próximos Pasos:</h2>
+        <a href="http://localhost:3000" class="button" target="_blank">
+            🌐 Abrir Frontend
+        </a>
+        <a href="http://127.0.0.1:8000" class="button" target="_blank">
+            🔧 Abrir Backend
+        </a>
+        
+        <div class="status warning">
+            ⚠️ Si el panel sigue tapando el chat, verifica que el servidor React esté ejecutándose y recarga la página
+        </div>
+    </div>
+</body>
+</html>
