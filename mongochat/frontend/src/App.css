@@ -1,0 +1,49 @@
+.app {
+  display: flex;
+  height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  overflow: hidden;
+  position: relative;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left 0.3s ease;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px 0 0 20px;
+  margin: 10px 10px 10px 0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  min-height: calc(100vh - 20px);
+}
+
+.sidebar-open {
+  margin-left: 0;
+}
+
+.sidebar-closed {
+  margin-left: 0;
+}
+
+@media (min-width: 769px) {
+  .sidebar-open {
+    margin-left: 300px;
+  }
+  
+  .sidebar-closed {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    border-radius: 0;
+    margin: 0;
+  }
+  
+  .sidebar-open {
+    margin-left: 0;
+  }
+}

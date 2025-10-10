@@ -1,0 +1,13 @@
+# Ignorar entornos y dependencias
+venv/
+node_modules/
+__pycache__/
+*.pyc
+
+# Archivos locales y de configuración
+.env
+db.sqlite3
+
+# Archivos de build
+dist/
+build/
