@@ -1,0 +1,8 @@
+Django>=4.2
+pymongo>=4.4
+langchain>=0.0.300
+langgraph>=0.2.0
+langchain-google-vertexai>=0.0.8
+google-cloud-aiplatform>=1.30.0
+python-dotenv>=1.0.0
+uvicorn>=0.22.0
